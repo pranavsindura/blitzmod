@@ -1,15 +1,30 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+import Dash from './Dash';
 import './app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Card, Form, InputGroup, Col, Row, Button } from 'react-bootstrap';
 
 export default class App extends Component {
-	state = { loggedIn: false, type: '', blitzID: '', blitzPIN: '' };
-
+	state = { loggedIn: false, type: '', id: '', blitzPIN: '', eventID: [], eventName: [], modID: '' };
+	proxy = 'http://localhost:8080';
 	componentDidUpdate() {}
 	handleSubmit = (e) => {
 		e.preventDefault();
 		console.log(this.state);
+		const { id, blitzPIN } = this.state;
+		axios
+			.post(this.proxy + '/moderatorLogin', { id, blitzPIN })
+			.then((res) => {
+				res = res.data;
+				// console.log(res);
+				if (res.status) {
+					this.setState({ loggedIn: true, modID: id, ...res.message });
+				} else {
+					alert(res.message);
+				}
+			})
+			.catch((e) => console.log(e));
 	};
 	handleChange = (e) => {
 		let val = e.target.value;
@@ -19,12 +34,12 @@ export default class App extends Component {
 		this.setState({ ...state });
 	};
 	render() {
-		const { loggedIn, type, blitzID, blitzPIN } = this.state;
-		if (loggedIn) return <div />;
+		const { loggedIn, modID, eventID, eventName, id, blitzPIN } = this.state;
+		if (loggedIn) return <Dash id={Number(modID)} eventID={eventID} eventName={eventName} />;
 		else
 			return (
 				<Container fluid>
-        <h1>MODERATOR LOGIN</h1>
+					<h1>MODERATOR LOGIN</h1>
 					<Card>
 						<Card.Body>
 							<Form
@@ -43,8 +58,8 @@ export default class App extends Component {
 													onChange={() => {
 														this.handleChange(event);
 													}}
-													value={blitzID}
-													id="blitzID"
+													value={id}
+													id="id"
 													type="text"
 													required={true}
 													placeholder="ID"
