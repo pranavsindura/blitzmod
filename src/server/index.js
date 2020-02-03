@@ -61,6 +61,64 @@ app.post('/eventdata', (req, res) => {
     });
 });
 
+app.post('/user', (req, res) => {
+    let userInput = req.body;
+    let id = userInput.blitzID;
+    moderator.retrieveUser(id).then(function(user) {
+        if (user) {
+            user.blitzPIN = undefined;
+            res.send({
+                status: true,
+                message: user
+            });
+        } else {
+            res.send({
+                status: false,
+                message: "Internal Error"
+            });
+        }
+    });
+});
+
+app.post('/accomodation', (req, res) => {
+    moderator.findMaleAcc().then(function(maleArr) {
+        if (maleArr) {
+            moderator.findFemaleAcc().then(function(femaleArr) {
+                if (femaleArr) {
+                    moderator.findOthersAcc().then(function(othersArr) {
+                        if (othersArr) {
+                            let data = {
+                                males: maleArr,
+                                females: femaleArr,
+                                others: othersArr
+                            };
+                            res.send({
+                                status: true,
+                                message: data
+                            });
+                        } else {
+                            res.send({
+                                status: othersArr,
+                                message: 'Internal Error'
+                            });
+                        }
+                    });
+                } else {
+                    res.send({
+                        status: false,
+                        message: 'Internal Error'
+                    });
+                }
+            });
+        } else {
+            res.send({
+                status: false,
+                message: 'Internal Error'
+            });
+        }
+    });
+});
+
 app.use(express.static('dist'));
 app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().username }));
 
