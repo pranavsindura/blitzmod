@@ -8,7 +8,6 @@ const uri = 'mongodb+srv://Dhairya-Shalu:light12345@first-demo-ocw10.mongodb.net
 
 let moderator = require('./moderator');
 let { upiPayModel } = require('./paymodel');
-
 const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
@@ -34,11 +33,11 @@ app.post('/moderatorLogin', (req, res) => {
         if (result === false) {
             res.send({
                 status: false,
-                message: "Interanl Error"
+                message: "Invalid Credentials!"
             });
         } else {
             res.send({
-                status: true,
+                status: true, 
                 message: result
             });
         }

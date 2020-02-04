@@ -24,48 +24,68 @@ async function findUsersOfEvent(id) {
     let obj = {
         blitzID: '',
         firstName: '',
+        lastName: '',
         teamID: 0,
         teamName: '',
         teamSize: 0,
         mob: '',
         email: ''
     };
-
+ 
     let data = await eventModel.find({ eventID: id }, (err) => {
         if (err) {
             console.log('not found');
         }
     });
+    // console.log('data', data.length)
     if (data) {
         let ids = [];
         for (x of data) {
-            ids.push(x.blitzID);
+            ids.push(String(x.blitzID));
         }
+        console.log('ids', ids.length)
         let users = await userModel.find({ blitzID: ids }, (err) => {
             if (err) {
-                console.log('error in user model');
+                // console.log('error in user model');
             }
         });
+        // console.log('users', users.length)
         if (users) {
-            console.log('ids', ids.length);
-            console.log('users', users.length);
+            // console.log('ids', ids.length);
+            // console.log('users', users.length);
+            let vis=[];
+            for(let i=0;i<ids.length;i++)
+                vis.push(false);
+            for(let i=0;i<users.length;i++)
+            {
+                let f = false;
+                for(let j=0;j<ids.length;j++)
+                {
+                    if(users[i].blitzID === ids[j] && !vis[j])
+                        f=true, vis[j]=true;
+                }
+                if(!f)
+                    console.log('EXTRA',users[i]);
+            }
             for (let i = 0; i < users.length; i++) {
                 obj.blitzID = users[i].blitzID;
                 obj.firstName = users[i].firstName;
+                obj.lastName = users[i].lastName;
                 obj.teamID = data[i].teamID;
                 obj.teamName = data[i].teamName;
                 obj.teamSize = data[i].teamSize;
                 obj.mob = users[i].mob;
                 obj.email = users[i].email;
-                result.push(obj);
+                result.push({...obj});
             }
-            console.log('result', result);
+            // console.log('result', result);
         }
     } else {
         console.log('no data');
         return false;
     }
     return result;
+    // return [];
 }
 
 async function retrieveUser(id) {
