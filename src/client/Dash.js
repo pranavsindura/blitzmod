@@ -16,44 +16,50 @@ export default class Dash extends Component {
 		modalContent: {},
 		hospitality: []
 	};
-	proxy = 'http://localhost:8080';
-	// proxy = '';
+	// proxy = 'http://localhost:8080';
+	proxy = '';
+	fetchAccomodation() {
+		axios
+			.post(this.proxy + '/accomodation')
+			.then((res) => {
+				res = res.data;
+				if (res.status) {
+					// console.log(res.message);
+					let maleArr = res.message.males;
+					let femaleArr = res.message.females;
+					let otherArr = res.message.others;
+					for (let i = 0; i < maleArr.length; i++) maleArr[i]['gender'] = 'Male';
+					for (let i = 0; i < femaleArr.length; i++) femaleArr[i]['gender'] = 'Female';
+					for (let i = 0; i < otherArr.length; i++) femaleArr[i]['gender'] = 'Other';
+
+					this.setState({ accomodationArray: [...maleArr, ...femaleArr, ...otherArr] });
+				} else {
+					alert('Internal Error!');
+				}
+			})
+			.catch((e) => {
+				console.log(e);
+			});
+	}
+	fetchTransaction() {
+		axios
+			.post(this.proxy + '/viewTransactions')
+			.then((res) => {
+				res = res.data;
+				if (res.status) {
+					this.setState({ transactionArray: [...res.message] });
+				} else {
+					alert('Internal Error!');
+				}
+			})
+			.catch((e) => console.log(e));
+	}
 	componentDidMount() {
 		// console.log(this.props);
 		this.setState({ eventSelected: this.props.eventID[0] });
 		if (this.props.id === 11) {
-			axios
-				.post(this.proxy + '/accomodation')
-				.then((res) => {
-					res = res.data;
-					if (res.status) {
-						// console.log(res.message);
-						let maleArr = res.message.males;
-						let femaleArr = res.message.females;
-						let otherArr = res.message.others;
-						for (let i = 0; i < maleArr.length; i++) maleArr[i]['gender'] = 'Male';
-						for (let i = 0; i < femaleArr.length; i++) femaleArr[i]['gender'] = 'Female';
-						for (let i = 0; i < otherArr.length; i++) femaleArr[i]['gender'] = 'Other';
-
-						this.setState({ accomodationArray: [...maleArr, ...femaleArr, ...otherArr] });
-					} else {
-						alert('Internal Error!');
-					}
-				})
-				.catch((e) => {
-					console.log(e);
-				});
-			axios
-				.post(this.proxy + '/viewTransactions')
-				.then((res) => {
-					res = res.data;
-					if (res.status) {
-						this.setState({ transactionArray: [...res.message] });
-					} else {
-						alert('Internal Error!');
-					}
-				})
-				.catch((e) => console.log(e));
+			this.fetchAccomodation();
+			this.fetchTransaction();
 		}
 	}
 	componentDidUpdate() {
@@ -197,7 +203,26 @@ export default class Dash extends Component {
 			);
 		return <ol>{ev}</ol>;
 	}
+	makePaymentHistory(obj) {
+		if (!obj.paymentHistory) return null;
+		let item = [];
+		for (let i = 0; i < obj.paymentHistory.length; i++) {
+			let e = obj.paymentHistory[i];
+			item.push(
+				<li>
+					Amount: {e.amount}
+					<br />
+					Transaction ID: {e.transactionID}
+					<br />
+					Hospitality Options: {e.packages.join(' ')}
+					<br />
+				</li>
+			);
+		}
+		return <ol>{item}</ol>;
+	}
 	renderTableUser(obj) {
+		console.log(obj);
 		return (
 			<Table bordered responsive>
 				<thead></thead>
@@ -262,6 +287,10 @@ export default class Dash extends Component {
 						<th>Hospitality Options</th>
 						<td>{this.makeHospitalityOptions(obj)}</td>
 					</tr>
+					<tr>
+						<th>Approved Payments</th>
+						<td>{this.makePaymentHistory(obj)}</td>
+					</tr>
 				</tbody>
 			</Table>
 		);
@@ -322,18 +351,36 @@ export default class Dash extends Component {
 		this.setState({ hospitality: [...arr] });
 	}
 	approveTransaction() {
-		let { hospitality } = this.state;
+		let { hospitality, modalContent } = this.state;
 		let arr = [];
 		for (let i = 0; i < hospitality.length; i++) {
-			if (hospitality[i]) arr.push(Number(hospitality[i]));
+			if (hospitality[i]) {
+				arr.push(parseInt(hospitality[i]));
+			}
 		}
-		if(arr.length)
-		{
-			
+		let valid = true;
+		for (let i = 0; i < arr.length; i++) {
+			if (arr[i] < 1 || arr[i] > 14 || isNaN(arr[i]) || Array.from(new Set(arr)).length != arr.length)
+				valid = false;
 		}
-		else
-		{
-			alert('Please Enter Package Numbers!')
+		if (arr.length && valid) {
+			console.log(arr);
+			let obj = { ...modalContent, packages: [...arr] };
+			axios
+				.post(this.proxy + '/transaction', obj)
+				.then((res) => {
+					res = res.data;
+					if (res.status) {
+						alert('Approved!');
+						this.fetchTransaction();
+						this.closeModal();
+					} else {
+						alert('Unable to Approve, Internal Error!');
+					}
+				})
+				.catch((e) => console.log(e));
+		} else {
+			alert('Please enter Valid Package Numbers! Please check for Repeated Values.');
 		}
 	}
 	viewTransaction() {
@@ -421,7 +468,6 @@ export default class Dash extends Component {
 						<label htmlFor="hospitalityString">
 							Enter package number as mentioned on the website, separated by space. Eg: 1 12 5 6 -
 						</label>
-						{console.log(hospitality.join(' '))}
 						<input
 							type="text"
 							value={hospitality.join(' ')}
@@ -444,6 +490,15 @@ export default class Dash extends Component {
 				</Modal>
 				<br />
 				<h3>Transactions: </h3>
+				<br />
+				<Button
+					onClick={() => {
+						this.fetchTransaction();
+					}}
+				>
+					Refresh
+				</Button>
+				<br />
 				<br />
 				<input
 					type="text"
@@ -504,6 +559,15 @@ export default class Dash extends Component {
 				<br />
 				<h3>Accomodation: </h3>
 				<br />
+				<Button
+					onClick={() => {
+						this.fetchAccomodation();
+					}}
+				>
+					Refresh
+				</Button>
+				<br />
+				<br />
 				<input
 					type="text"
 					value={filterText}
@@ -530,24 +594,7 @@ export default class Dash extends Component {
 			</div>
 		);
 	}
-	display() {
-		const { option } = this.state;
-		switch (option) {
-			case 0:
-				return this.viewEvents();
-			case 1:
-				return this.viewUser();
-			case 2:
-				return this.viewTransaction();
-			case 3:
-				return this.viewAccomodation();
-			default:
-				return this.viewEvents();
-		}
-	}
 	selectOption(option) {
-		// console.log(arguments);
-		// console.log('selecting ' + option);
 		this.setState({
 			option,
 			eventArray: [],
@@ -583,46 +630,6 @@ export default class Dash extends Component {
 						{this.viewTransaction()}
 					</Tab>
 				</Tabs>
-				{/* <div>
-					<Button
-						onClick={() => {
-							this.handleEventSelect({ target: { value: this.props.eventID[0] } });
-							this.selectOption(0);
-						}}
-					>
-						View Event Registrations
-					</Button>
-				</div>
-				&nbsp;
-				{this.props.id === 11 ? (
-					<div>
-						<Button
-							onClick={() => {
-								this.selectOption(1);
-							}}
-						>
-							View User Details
-						</Button>
-						&nbsp;
-						<Button
-							onClick={() => {
-								this.selectOption(2);
-							}}
-						>
-							View/Approve Transactions
-						</Button>
-						&nbsp;
-						<Button
-							onClick={() => {
-								this.selectOption(3);
-							}}
-						>
-							View Accomodation List
-						</Button>
-						&nbsp;
-					</div>
-				) : null}
-				{this.display()} */}
 			</div>
 		);
 	}
