@@ -1,16 +1,52 @@
 import React, { Component } from 'react';
-import { Button, Table } from 'react-bootstrap';
+import { Button, Table, Tabs, Tab } from 'react-bootstrap';
 import axios from 'axios';
 export default class Dash extends Component {
-	state = { option: 0, eventSelected: '', eventArray: [], userSearchID: '', userObj: {} };
-	// proxy = 'http://localhost:8080';
-	proxy = '';
+	state = {
+		option: 0,
+		eventSelected: '',
+		eventArray: [],
+		userSearchID: '',
+		userObj: {},
+		filterText: '',
+		accomodationArray: [],
+		transBlitzID: ''
+	};
+	proxy = 'http://localhost:8080';
+	// proxy = '';
 	componentDidMount() {
-		console.log(this.props);
+		// console.log(this.props);
 		this.setState({ eventSelected: this.props.eventID[0] });
+		if (this.props.id === 11) {
+			axios
+				.post(this.proxy + '/accomodation')
+				.then((res) => {
+					res = res.data;
+					if (res.status) {
+						// console.log(res.message);
+						let maleArr = res.message.males;
+						let femaleArr = res.message.females;
+						let otherArr = res.message.others;
+						for (let i = 0; i < maleArr.length; i++) maleArr[i]['gender'] = 'Male';
+						for (let i = 0; i < femaleArr.length; i++) femaleArr[i]['gender'] = 'Female';
+						for (let i = 0; i < otherArr.length; i++) femaleArr[i]['gender'] = 'Other';
+
+						this.setState({ accomodationArray: [...maleArr, ...femaleArr, ...otherArr] });
+					} else {
+						alert('Internal Error!');
+					}
+				})
+				.catch((e) => {
+					console.log(e);
+				});
+		}
 	}
 	componentDidUpdate() {
 		console.log(this.state);
+	}
+	handleFilterText(e) {
+		// console.log(e.target.value);
+		this.setState({ filterText: e.target.value });
 	}
 	handleEventSelect(e) {
 		this.setState({ eventSelected: Number(e.target.value) });
@@ -34,12 +70,21 @@ export default class Dash extends Component {
 	}
 	renderTable(arr) {
 		let item = [];
+		let { filterText } = this.state;
+		filterText = filterText.trim();
 		// console.log(arr);
+		if (filterText) {
+			let arr2 = [];
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i].blitzID.includes(filterText)) arr2.push(arr[i]);
+			}
+			arr = arr2;
+		}
 		for (let i = 0; i < arr.length; i++) {
 			let e = arr[i];
 			// console.log(e);
 			item.push(
-				<tr>
+				<tr key={`t1-${i}`}>
 					<td>{i + 1}</td>
 					<td>{e.blitzID}</td>
 					<td>{e.firstName + ' ' + e.lastName}</td>
@@ -55,14 +100,14 @@ export default class Dash extends Component {
 			<Table striped responsive bordered>
 				<thead>
 					<tr>
-						<th>#</th>
-						<th>Blitz ID</th>
-						<th>Name</th>
-						<th>Team ID</th>
-						<th>Team Name</th>
-						<th>Team Size</th>
-						<th>Mobile</th>
-						<th>Email</th>
+						<td>#</td>
+						<td>Blitz ID</td>
+						<td>Name</td>
+						<td>Team ID</td>
+						<td>Team Name</td>
+						<td>Team Size</td>
+						<td>Mobile</td>
+						<td>Email</td>
 					</tr>
 				</thead>
 				<tbody>{item}</tbody>
@@ -71,10 +116,10 @@ export default class Dash extends Component {
 	}
 	viewEvents() {
 		let drop = [];
-		const { eventArray } = this.state;
+		const { eventArray, filterText } = this.state;
 		for (let i = 0; i < this.props.eventName.length; i++)
 			drop.push(
-				<option id={this.props.eventID[i]} value={this.props.eventID[i]}>
+				<option key={`opt-${i}`} id={this.props.eventID[i]} value={this.props.eventID[i]}>
 					{this.props.eventName[i]}
 				</option>
 			);
@@ -96,6 +141,15 @@ export default class Dash extends Component {
 						{drop}
 					</select>
 					<button type="submit">Submit</button>
+					<br />
+					<input
+						type="text"
+						value={filterText}
+						onChange={() => {
+							this.handleFilterText(event);
+						}}
+						placeholder="Filter by Blitz ID"
+					/>
 				</form>
 				<div>{this.renderTable(eventArray)}</div>
 			</div>
@@ -103,19 +157,16 @@ export default class Dash extends Component {
 	}
 	handleUserChange(e) {
 		this.setState({ userSearchID: e.target.value });
-    }
-    makeHospitalityOptions(obj)
-    {
-        if(!obj.hospitality)
-            return '';
-        let opt = '';
-        obj.hospitality.sort();
-        for(let i=0;i<obj.hospitality.length;i++)
-        {
-                opt += obj.hospitality[i] + ' ';
-        }
-        return opt;
-    }
+	}
+	makeHospitalityOptions(obj) {
+		if (!obj.hospitality) return '';
+		let opt = '';
+		obj.hospitality.sort();
+		for (let i = 0; i < obj.hospitality.length; i++) {
+			opt += obj.hospitality[i] + ' ';
+		}
+		return opt;
+	}
 	makeParticipateList(obj) {
 		if (!obj.events) return null;
 
@@ -208,7 +259,7 @@ export default class Dash extends Component {
 			.post(this.proxy + '/user', { blitzID: userSearchID })
 			.then((res) => {
 				res = res.data;
-				console.log(res);
+				// console.log(res);
 				if (res.status) {
 					this.setState({ userObj: res.message });
 				} else {
@@ -245,8 +296,95 @@ export default class Dash extends Component {
 			</div>
 		);
 	}
-	viewTransaction() {}
-	viewAccomodation() {}
+	handleTransactionChange(e) {
+		this.setState({ transBlitzID: e.target.value });
+	}
+	handleTransactionSubmit(e) {
+		e.preventDefault();
+		const { transBlitzID } = this.state;
+		console.log(transBlitzID);
+	}
+	viewTransaction() {
+		const { transBlitzID } = this.state;
+		return (
+			<div>
+				<br />
+				<h3>Transactions: </h3>
+				<br />
+				<form
+					onSubmit={() => {
+						this.handleTransactionSubmit(event);
+					}}
+				>
+					<input
+						type="text"
+						id="transBlitzID"
+						value={transBlitzID}
+						onChange={() => {
+							this.handleTransactionChange(event);
+						}}
+						placeholder="Enter Blitz ID"
+					/>
+					<button type="submit">Submit</button>
+				</form>
+			</div>
+		);
+	}
+	viewAccomodation() {
+		let { accomodationArray, filterText } = this.state;
+		filterText = filterText.trim();
+		if (filterText) {
+			let arr2 = [];
+			for (let i = 0; i < accomodationArray.length; i++) {
+				if (accomodationArray[i].blitzID.includes(filterText)) arr2.push(accomodationArray[i]);
+			}
+			accomodationArray = arr2;
+		}
+		let item = [];
+		for (let i = 0; i < accomodationArray.length; i++) {
+			let e = accomodationArray[i];
+			item.push(
+				<tr>
+					<td>{i + 1}</td>
+					<td>{e.blitzID}</td>
+					<td>{e.firstName + ' ' + e.lastName}</td>
+					<td>{e.gender}</td>
+					<td>{e.mob}</td>
+					<td>{e.email}</td>
+					<td>{e.college}</td>
+					<td>{e.city}</td>
+				</tr>
+			);
+		}
+		return (
+			<div>
+				<br />
+				<h3>Accomodation: </h3>
+				<br />
+				<input
+					type="text"
+					value={filterText}
+					onChange={() => {
+						this.handleFilterText(event);
+					}}
+					placeholder="Filter by Blitz ID"
+				/>
+				<Table bordered responsive>
+					<thead>
+						<td>#</td>
+						<td>Blitz ID</td>
+						<td>Name</td>
+						<td>Gender</td>
+						<td>Mobile</td>
+						<td>Email</td>
+						<td>College</td>
+						<td>City</td>
+					</thead>
+					<tbody>{item}</tbody>
+				</Table>
+			</div>
+		);
+	}
 	display() {
 		const { option } = this.state;
 		switch (option) {
@@ -263,12 +401,35 @@ export default class Dash extends Component {
 		}
 	}
 	selectOption(option) {
-		this.setState({ option, eventArray: [], userSearchID: '', userObj: [] });
+		// console.log(arguments);
+		// console.log('selecting ' + option);
+		this.setState({ option, eventArray: [], userSearchID: '', userObj: [], filterText: '', transBlitzID: '' });
 	}
 	render() {
 		return (
 			<div>
-				<div>
+				<Tabs
+					variant="pills"
+					defaultActiveKey="0"
+					id="uncontrolled-tab-example"
+					onSelect={(k) => {
+						this.selectOption(Number(k));
+					}}
+				>
+					<Tab eventKey="0" title="Event Registerations">
+						{this.display()}
+					</Tab>
+					<Tab eventKey="1" title="User Details" disabled={this.props.id === 11 ? false : true}>
+						{this.viewUser()}
+					</Tab>
+					<Tab eventKey="2" title="Accomodation" disabled={this.props.id === 11 ? false : true}>
+						{this.viewAccomodation()}
+					</Tab>
+					<Tab eventKey="3" title="Transactions" disabled={this.props.id === 11 ? false : true}>
+						{this.viewTransaction()}
+					</Tab>
+				</Tabs>
+				{/* <div>
 					<Button
 						onClick={() => {
 							this.handleEventSelect({ target: { value: this.props.eventID[0] } });
@@ -307,7 +468,7 @@ export default class Dash extends Component {
 						&nbsp;
 					</div>
 				) : null}
-				{this.display()}
+				{this.display()} */}
 			</div>
 		);
 	}

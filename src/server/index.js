@@ -6,7 +6,7 @@ const bodyparser = require('body-parser');
 
 const uri = 'mongodb+srv://Dhairya-Shalu:light12345@first-demo-ocw10.mongodb.net/test?retryWrites=true&w=majority';
 
-let moderator = require('./moderator');
+let moderator = require('./moderator'); 
  
 const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
