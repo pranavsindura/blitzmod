@@ -7,6 +7,7 @@ const bodyparser = require('body-parser');
 const uri = 'mongodb+srv://Dhairya-Shalu:light12345@first-demo-ocw10.mongodb.net/test?retryWrites=true&w=majority';
 
 let moderator = require('./moderator');
+let { upiPayModel } = require('./paymodel');
 
 const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -114,6 +115,22 @@ app.post('/accomodation', (req, res) => {
             res.send({
                 status: false,
                 message: 'Internal Error'
+            });
+        }
+    });
+});
+
+app.post('/viewTransactions', (req, res) => {
+    upiPayModel.find({}).then(function(payments) {
+        if (payments) {
+            res.send({
+                status: true,
+                message: payments
+            });
+        } else {
+            res.send({
+                status: false,
+                message: "Interanl Error"
             });
         }
     });
