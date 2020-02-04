@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Table, Tabs, Tab } from 'react-bootstrap';
+import { Button, Table, Tabs, Tab, Modal } from 'react-bootstrap';
 import axios from 'axios';
 export default class Dash extends Component {
 	state = {
@@ -10,10 +10,14 @@ export default class Dash extends Component {
 		userObj: {},
 		filterText: '',
 		accomodationArray: [],
-		transBlitzID: ''
+		transactionArray: [],
+		transBlitzID: '',
+		show: false,
+		modalContent: {},
+		hospitality: []
 	};
-	// proxy = 'http://localhost:8080';
-	proxy = '';
+	proxy = 'http://localhost:8080';
+	// proxy = '';
 	componentDidMount() {
 		// console.log(this.props);
 		this.setState({ eventSelected: this.props.eventID[0] });
@@ -39,6 +43,17 @@ export default class Dash extends Component {
 				.catch((e) => {
 					console.log(e);
 				});
+			axios
+				.post(this.proxy + '/viewTransactions')
+				.then((res) => {
+					res = res.data;
+					if (res.status) {
+						this.setState({ transactionArray: [...res.message] });
+					} else {
+						alert('Internal Error!');
+					}
+				})
+				.catch((e) => console.log(e));
 		}
 	}
 	componentDidUpdate() {
@@ -296,37 +311,165 @@ export default class Dash extends Component {
 			</div>
 		);
 	}
-	handleTransactionChange(e) {
-		this.setState({ transBlitzID: e.target.value });
+	openModal(trans) {
+		this.setState({ show: true, modalContent: trans, hospitality: [] });
 	}
-	handleTransactionSubmit(e) {
-		e.preventDefault();
-		const { transBlitzID } = this.state;
-		console.log(transBlitzID);
+	closeModal() {
+		this.setState({ show: false, modalContent: {}, hospitality: [] });
+	}
+	handleHospitalityString(e) {
+		let arr = e.target.value.split(' ');
+		this.setState({ hospitality: [...arr] });
+	}
+	approveTransaction() {
+		let { hospitality } = this.state;
+		let arr = [];
+		for (let i = 0; i < hospitality.length; i++) {
+			if (hospitality[i]) arr.push(Number(hospitality[i]));
+		}
+		if(arr.length)
+		{
+			
+		}
+		else
+		{
+			alert('Please Enter Package Numbers!')
+		}
 	}
 	viewTransaction() {
-		const { transBlitzID } = this.state;
+		let { filterText, show, modalContent, hospitality } = this.state;
+		filterText = filterText.trim();
+		let arr = this.state.transactionArray;
+		// console.log(arr);
+		if (filterText) {
+			let arr2 = [];
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i].blitzID.includes(filterText)) arr2.push(arr[i]);
+			}
+			arr = arr2;
+		}
+		let item = [];
+		for (let i = 0; i < arr.length; i++) {
+			item.push(
+				<tr>
+					<td>{i + 1}</td>
+					<td>{arr[i].blitzID}</td>
+					<td>{arr[i].firstName + ' ' + arr[i].lastName}</td>
+					<td>{arr[i].mob}</td>
+					<td>{arr[i].email}</td>
+					<td>{arr[i].transactionID}</td>
+					<td>{arr[i].amount}</td>
+					<td>{arr[i].approval ? 'YES' : 'NO'}</td>
+					<td>
+						{arr[i].approval ? null : (
+							<Button
+								type="success"
+								onClick={() => {
+									this.openModal(arr[i]);
+								}}
+							>
+								Approve
+							</Button>
+						)}
+					</td>
+				</tr>
+			);
+		}
 		return (
 			<div>
+				<Modal
+					show={show}
+					onHide={() => {
+						this.closeModal();
+					}}
+				>
+					<Modal.Header closeButton>
+						<Modal.Title>Approve Transaction</Modal.Title>
+					</Modal.Header>
+					<Modal.Body>
+						<Table bordered responsive>
+							<thead></thead>
+							{Object.keys(modalContent).length ? (
+								<tbody>
+									<tr>
+										<td>Blitz ID</td>
+										<td>{modalContent.blitzID}</td>
+									</tr>
+									<tr>
+										<td>Name</td>
+										<td>{modalContent.firstName + ' ' + modalContent.lastName}</td>
+									</tr>
+									<tr>
+										<td>Mobile</td>
+										<td>{modalContent.mob}</td>
+									</tr>
+									<tr>
+										<td>Email</td>
+										<td>{modalContent.email}</td>
+									</tr>
+									<tr>
+										<td>Transaction ID</td>
+										<td>{modalContent.transactionID}</td>
+									</tr>
+									<tr>
+										<td>Amount</td>
+										<td>{modalContent.amount}</td>
+									</tr>
+								</tbody>
+							) : null}
+						</Table>
+						<label htmlFor="hospitalityString">
+							Enter package number as mentioned on the website, separated by space. Eg: 1 12 5 6 -
+						</label>
+						{console.log(hospitality.join(' '))}
+						<input
+							type="text"
+							value={hospitality.join(' ')}
+							id="hospitalityString"
+							onChange={() => {
+								this.handleHospitalityString(event);
+							}}
+						/>
+					</Modal.Body>
+					<Modal.Footer>
+						<Button
+							variant="success"
+							onClick={() => {
+								this.approveTransaction();
+							}}
+						>
+							Submit
+						</Button>
+					</Modal.Footer>
+				</Modal>
 				<br />
 				<h3>Transactions: </h3>
 				<br />
-				<form
-					onSubmit={() => {
-						this.handleTransactionSubmit(event);
+				<input
+					type="text"
+					id="filterText"
+					value={filterText}
+					onChange={() => {
+						this.handleFilterText(event);
 					}}
-				>
-					<input
-						type="text"
-						id="transBlitzID"
-						value={transBlitzID}
-						onChange={() => {
-							this.handleTransactionChange(event);
-						}}
-						placeholder="Enter Blitz ID"
-					/>
-					<button type="submit">Submit</button>
-				</form>
+					placeholder="Filter by Blitz ID"
+				/>
+				<Table bordered responsive>
+					<thead>
+						<tr>
+							<td>#</td>
+							<td>Blitz ID</td>
+							<td>Name</td>
+							<td>Mobile</td>
+							<td>Email</td>
+							<td>Transaction ID</td>
+							<td>Amount</td>
+							<td>Approved</td>
+							<td>Change Status</td>
+						</tr>
+					</thead>
+					<tbody>{item}</tbody>
+				</Table>
 			</div>
 		);
 	}
@@ -371,14 +514,16 @@ export default class Dash extends Component {
 				/>
 				<Table bordered responsive>
 					<thead>
-						<td>#</td>
-						<td>Blitz ID</td>
-						<td>Name</td>
-						<td>Gender</td>
-						<td>Mobile</td>
-						<td>Email</td>
-						<td>College</td>
-						<td>City</td>
+						<tr>
+							<td>#</td>
+							<td>Blitz ID</td>
+							<td>Name</td>
+							<td>Gender</td>
+							<td>Mobile</td>
+							<td>Email</td>
+							<td>College</td>
+							<td>City</td>
+						</tr>
 					</thead>
 					<tbody>{item}</tbody>
 				</Table>
@@ -403,7 +548,17 @@ export default class Dash extends Component {
 	selectOption(option) {
 		// console.log(arguments);
 		// console.log('selecting ' + option);
-		this.setState({ option, eventArray: [], userSearchID: '', userObj: [], filterText: '', transBlitzID: '' });
+		this.setState({
+			option,
+			eventArray: [],
+			userSearchID: '',
+			userObj: [],
+			filterText: '',
+			transBlitzID: '',
+			show: false,
+			modalContent: {},
+			hospitality: []
+		});
 	}
 	render() {
 		return (

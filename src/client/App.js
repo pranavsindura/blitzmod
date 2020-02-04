@@ -7,8 +7,8 @@ import { Container, Card, Form, InputGroup, Col, Row, Button } from 'react-boots
 
 export default class App extends Component {
 	state = { loggedIn: false, type: '', id: '', blitzPIN: '', eventID: [], eventName: [], modID: '' };
-	// proxy = 'http://localhost:8080';
-	proxy = '';
+	proxy = 'http://localhost:8080';
+	// proxy = '';
 	componentDidUpdate() {}
 	handleSubmit = (e) => {
 		e.preventDefault();
