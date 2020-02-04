@@ -8,6 +8,7 @@ const uri = 'mongodb+srv://Dhairya-Shalu:light12345@first-demo-ocw10.mongodb.net
 
 let moderator = require('./moderator');
 let { upiPayModel } = require('./paymodel');
+let { userModel } = require('./model');
 const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
@@ -37,7 +38,7 @@ app.post('/moderatorLogin', (req, res) => {
             });
         } else {
             res.send({
-                status: true, 
+                status: true,
                 message: result
             });
         }
@@ -130,6 +131,48 @@ app.post('/viewTransactions', (req, res) => {
             res.send({
                 status: false,
                 message: "Interanl Error"
+            });
+        }
+    });
+});
+
+app.post('/transaction', (req, res) => {
+    let userInput = req.body;
+    upiPayModel.findOneAndUpdate({ _id: userInput._id }, { approval: true }).then(function(result) {
+        if (result) {
+            userModel.find({ blitzID: userInput.blitzID }).then(function(user) {
+                if (user) {
+                    let obj = {
+                        packages: userInput.packages,
+                        amount: userInput.amount,
+                        transactionID: userInput.transactionID
+                    };
+                    let ph = user[0].paymentHistory;
+                    ph.push(obj);
+                    userModel.findOneAndUpdate({ blitzID: userInput.blitzID }, { paymentHistory: ph }).then(function(flag) {
+                        if (flag) {
+                            res.send({
+                                status: true,
+                                message: ''
+                            })
+                        } else {
+                            res.send({
+                                status: false,
+                                message: 'Internal Error'
+                            })
+                        }
+                    })
+                } else {
+                    res.send({
+                        status: false,
+                        message: 'Interanl Error'
+                    });
+                }
+            })
+        } else {
+            res.send({
+                status: false,
+                message: 'Interanl Error'
             });
         }
     });
