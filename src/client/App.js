@@ -12,7 +12,7 @@ export default class App extends Component {
 	componentDidUpdate() {}
 	handleSubmit = (e) => {
 		e.preventDefault();
-		console.log(this.state);
+		// console.log(this.state);
 		const { id, blitzPIN } = this.state;
 		axios
 			.post(this.proxy + '/moderatorLogin', { id, blitzPIN })
@@ -34,9 +34,19 @@ export default class App extends Component {
 		state[id] = val;
 		this.setState({ ...state });
 	};
+	handleLogout()
+	{
+		this.setState({ loggedIn: false, type: '', id: '', blitzPIN: '', eventID: [], eventName: [], modID: '' });
+	}
 	render() {
 		const { loggedIn, modID, eventID, eventName, id, blitzPIN } = this.state;
-		if (loggedIn) return <Dash id={Number(modID)} eventID={eventID} eventName={eventName} />;
+		if (loggedIn) return (
+			<Container fluid>
+			<Button variant="danger" onClick={()=>{this.handleLogout()}}>Logout</Button>
+			<br/>
+		<Dash id={Number(modID)} eventID={eventID} eventName={eventName} />
+		</Container>
+		);
 		else
 			return (
 				<Container fluid>

@@ -42,7 +42,7 @@ export default class Dash extends Component {
 		}
 	}
 	componentDidUpdate() {
-		console.log(this.state);
+		// console.log(this.state);
 	}
 	handleFilterText(e) {
 		// console.log(e.target.value);
@@ -409,7 +409,6 @@ export default class Dash extends Component {
 		return (
 			<div>
 				<Tabs
-					variant="pills"
 					defaultActiveKey="0"
 					id="uncontrolled-tab-example"
 					onSelect={(k) => {
