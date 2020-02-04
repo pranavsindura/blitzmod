@@ -12,8 +12,8 @@ export default class Dash extends Component {
 		accomodationArray: [],
 		transBlitzID: ''
 	};
-	proxy = 'http://localhost:8080';
-	// proxy = '';
+	// proxy = 'http://localhost:8080';
+	proxy = '';
 	componentDidMount() {
 		// console.log(this.props);
 		this.setState({ eventSelected: this.props.eventID[0] });
