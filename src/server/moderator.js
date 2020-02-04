@@ -43,16 +43,30 @@ async function findUsersOfEvent(id) {
         for (x of data) {
             ids.push(String(x.blitzID));
         }
-        // console.log('ids', ids, ids.length)
+        console.log('ids', ids.length)
         let users = await userModel.find({ blitzID: ids }, (err) => {
             if (err) {
-                console.log('error in user model');
+                // console.log('error in user model');
             }
         });
         // console.log('users', users.length)
         if (users) {
             // console.log('ids', ids.length);
             // console.log('users', users.length);
+            let vis=[];
+            for(let i=0;i<ids.length;i++)
+                vis.push(false);
+            for(let i=0;i<users.length;i++)
+            {
+                let f = false;
+                for(let j=0;j<ids.length;j++)
+                {
+                    if(users[i].blitzID === ids[j] && !vis[j])
+                        f=true, vis[j]=true;
+                }
+                if(!f)
+                    console.log('EXTRA',users[i]);
+            }
             for (let i = 0; i < users.length; i++) {
                 obj.blitzID = users[i].blitzID;
                 obj.firstName = users[i].firstName;
