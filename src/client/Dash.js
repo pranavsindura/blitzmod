@@ -203,23 +203,23 @@ export default class Dash extends Component {
 			);
 		return <ol>{ev}</ol>;
 	}
-	makePaymentHistory(obj) {
+	makePaymentHistory(obj)
+	{
+		// console.log(obj.paymentHistory);
 		if (!obj.paymentHistory) return null;
 		let item = [];
-		for (let i = 0; i < obj.paymentHistory.length; i++) {
+		for(let i=0;i<obj.paymentHistory.length;i++)
+		{
 			let e = obj.paymentHistory[i];
 			item.push(
 				<li>
-					Amount: {e.amount}
-					<br />
-					Transaction ID: {e.transactionID}
-					<br />
-					Hospitality Options: {e.packages.join(' ')}
-					<br />
+					Amount: {e.amount}<br/>
+					Transaction ID: {e.transactionID}<br/>
+					Hospitality Options: {e.packages.join(' ')}<br/>
 				</li>
 			);
 		}
-		return <ol>{item}</ol>;
+		return <ol>{item}</ol>
 	}
 	renderTableUser(obj) {
 		console.log(obj);
@@ -491,15 +491,8 @@ export default class Dash extends Component {
 				<br />
 				<h3>Transactions: </h3>
 				<br />
-				<Button
-					onClick={() => {
-						this.fetchTransaction();
-					}}
-				>
-					Refresh
-				</Button>
-				<br />
-				<br />
+				<Button onClick={()=>{this.fetchTransaction()}}>Refresh</Button>
+				<br/><br/>
 				<input
 					type="text"
 					id="filterText"
@@ -559,15 +552,8 @@ export default class Dash extends Component {
 				<br />
 				<h3>Accomodation: </h3>
 				<br />
-				<Button
-					onClick={() => {
-						this.fetchAccomodation();
-					}}
-				>
-					Refresh
-				</Button>
-				<br />
-				<br />
+				<Button onClick={()=>{this.fetchAccomodation()}}>Refresh</Button>
+				<br/><br/>
 				<input
 					type="text"
 					value={filterText}
@@ -594,7 +580,24 @@ export default class Dash extends Component {
 			</div>
 		);
 	}
+	display() {
+		const { option } = this.state;
+		switch (option) {
+			case 0:
+				return this.viewEvents();
+			case 1:
+				return this.viewUser();
+			case 2:
+				return this.viewTransaction();
+			case 3:
+				return this.viewAccomodation();
+			default:
+				return this.viewEvents();
+		}
+	}
 	selectOption(option) {
+		// console.log(arguments);
+		// console.log('selecting ' + option);
 		this.setState({
 			option,
 			eventArray: [],
@@ -618,7 +621,7 @@ export default class Dash extends Component {
 					}}
 				>
 					<Tab eventKey="0" title="Event Registerations">
-						{this.display()}
+						{this.viewEvents()}
 					</Tab>
 					<Tab eventKey="1" title="User Details" disabled={this.props.id === 11 ? false : true}>
 						{this.viewUser()}
@@ -630,6 +633,7 @@ export default class Dash extends Component {
 						{this.viewTransaction()}
 					</Tab>
 				</Tabs>
+
 			</div>
 		);
 	}
