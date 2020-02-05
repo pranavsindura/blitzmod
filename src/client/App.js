@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+axios.defaults.timeout = 240000;
 import Dash from './Dash';
 import './app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';

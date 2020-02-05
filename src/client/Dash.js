@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Table, Tabs, Tab, Modal } from 'react-bootstrap';
 import axios from 'axios';
+axios.defaults.timeout = 240000;
 export default class Dash extends Component {
 	state = {
 		option: 0,
