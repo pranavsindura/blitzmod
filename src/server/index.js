@@ -178,7 +178,7 @@ app.post('/transaction', (req, res) => {
     });
 });
 
-add.post('/addTransaction', (req, res) => {
+app.post('/addTransaction', (req, res) => {
     let userInput = req.body;
 
     userModel.findOne({ blitzID: String(userInput.blitzID) }).then(function(user) {
