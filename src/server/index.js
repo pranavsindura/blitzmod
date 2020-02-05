@@ -178,6 +178,43 @@ app.post('/transaction', (req, res) => {
     });
 });
 
+add.post('/addTransaction', (req, res) => {
+    let userInput = req.body;
+
+    userModel.findOne({ blitzID: String(userInput.blitzID) }).then(function(user) {
+        let obj = new upiPayModel();
+
+        let obj = {
+            blitzID: user.blitzID,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            mob: user.mob,
+            email: user.email,
+            amount: userInput.amount,
+            transactionID: userInput.transactionID,
+            approval: false
+        };
+
+        obj.save().then((result) => {
+            res.send({
+                status: true,
+                message: ""
+            });
+        }).catch(err => {
+            res.send({
+                status: false,
+                message: "Some Error Occured!"
+            });
+        });
+
+    }).catch(err => {
+        res.send({
+            status: false,
+            message: "Internal error!"
+        });
+    });
+});
+
 app.use(express.static('dist'));
 app.get('/api/getUsername', (req, res) => res.send({ username: os.userInfo().username }));
 
