@@ -45,7 +45,7 @@ async function findUsersOfEvent(id) {
                     console.log('errrrr');
                 }
             });
-            console.log(user.blitzID);
+            console.log(i+1);
             obj.blitzID = user.blitzID;
             obj.firstName = user.firstName;
             obj.lastName = user.lastName;
