@@ -14,7 +14,17 @@ export default class Dash extends Component {
 		transBlitzID: '',
 		show: false,
 		modalContent: {},
-		hospitality: []
+		hospitality: [],
+		transac: {
+			blitzID: '',
+			firstName: '',
+			lastName: '',
+			mob: '',
+			email: '',
+			amount: 0,
+			transactionID: '',
+			approval: false
+		},
 	};
 	// proxy = 'http://localhost:8080';
 	proxy = '';
@@ -222,7 +232,7 @@ export default class Dash extends Component {
 		return <ol>{item}</ol>
 	}
 	renderTableUser(obj) {
-		console.log(obj);
+		// console.log(obj);
 		return (
 			<Table bordered responsive>
 				<thead></thead>
@@ -364,7 +374,7 @@ export default class Dash extends Component {
 				valid = false;
 		}
 		if (arr.length && valid) {
-			console.log(arr);
+			// console.log(arr);
 			let obj = { ...modalContent, packages: [...arr] };
 			axios
 				.post(this.proxy + '/transaction', obj)
@@ -580,20 +590,32 @@ export default class Dash extends Component {
 			</div>
 		);
 	}
-	display() {
-		const { option } = this.state;
-		switch (option) {
-			case 0:
-				return this.viewEvents();
-			case 1:
-				return this.viewUser();
-			case 2:
-				return this.viewTransaction();
-			case 3:
-				return this.viewAccomodation();
-			default:
-				return this.viewEvents();
-		}
+	addTransaction()
+	{
+		// blitzID: String,
+		// firstName: String,
+		// lastName: String,
+		// mob: String,
+		// email: String,
+		// amount: Number,
+		// transactionID: String,
+		// approval: Boolean
+		
+		const {transac} = this.state;
+		return(
+			<div>
+				<form>
+					<label htmlFor="blitzID">Blitz ID: blitz20@</label>
+					<input type="text" id="blitzID" value={transac.blitzID} onChange={()=>{this.handleAddChange(event)}} />
+					<br/>
+					<label htmlFor="firstName">First Name:</label>
+					<input type="text" id="firstName" value={transac.firstName} onChange={()=>{this.handleAddChange(event)}} />
+					<br/>
+					<label htmlFor="lastName">Last Name:</label>
+					<input type="text" id="lastName" value={transac.lastName} onChange={()=>{this.handleAddChange(event)}} />
+				</form>
+			</div>
+		);
 	}
 	selectOption(option) {
 		// console.log(arguments);
@@ -607,7 +629,17 @@ export default class Dash extends Component {
 			transBlitzID: '',
 			show: false,
 			modalContent: {},
-			hospitality: []
+			hospitality: [],
+			transac: {
+				blitzID: '',
+				firstName: '',
+				lastName: '',
+				mob: '',
+				email: '',
+				amount: 0,
+				transactionID: '',
+				approval: false
+			},
 		});
 	}
 	render() {
@@ -629,9 +661,12 @@ export default class Dash extends Component {
 					<Tab eventKey="2" title="Accomodation" disabled={this.props.id === 11 ? false : true}>
 						{this.viewAccomodation()}
 					</Tab>
-					<Tab eventKey="3" title="Transactions" disabled={this.props.id === 11 ? false : true}>
+					<Tab eventKey="3" title="View/Approve Transactions" disabled={this.props.id === 11 ? false : true}>
 						{this.viewTransaction()}
 					</Tab>
+					{/* <Tab eventKey="4" title="Add Transaction" disabled={this.props.id === 11 ? false : true}>
+						{this.addTransaction()}
+					</Tab> */}
 				</Tabs>
 
 			</div>

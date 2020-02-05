@@ -26,10 +26,10 @@ async function findUsersOfEvent(id) {
             console.log('not found');
         }
     });
-    // console.log(data);
+    console.log(data.length);
     if (data) {
 
-        for (i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             let obj = {
                 blitzID: '',
                 firstName: '',
@@ -45,6 +45,7 @@ async function findUsersOfEvent(id) {
                     console.log('errrrr');
                 }
             });
+            console.log(user);
             obj.blitzID = user.blitzID;
             obj.firstName = user.firstName;
             obj.lastName = user.lastName;
