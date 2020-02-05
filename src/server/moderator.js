@@ -21,71 +21,42 @@ async function validateMod(id, pin) {
 
 async function findUsersOfEvent(id) {
     let result = [];
-    let obj = {
-        blitzID: '',
-        firstName: '',
-        lastName: '',
-        teamID: 0,
-        teamName: '',
-        teamSize: 0,
-        mob: '',
-        email: ''
-    };
- 
     let data = await eventModel.find({ eventID: id }, (err) => {
         if (err) {
             console.log('not found');
         }
     });
-    // console.log('data', data.length)
+    // console.log(data);
     if (data) {
-        let ids = [];
-        for (x of data) {
-            ids.push(String(x.blitzID));
-        }
-        console.log('ids', ids.length)
-        let users = await userModel.find({ blitzID: ids }, (err) => {
-            if (err) {
-                // console.log('error in user model');
-            }
-        });
-        // console.log('users', users.length)
-        if (users) {
-            // console.log('ids', ids.length);
-            // console.log('users', users.length);
-            let vis=[];
-            for(let i=0;i<ids.length;i++)
-                vis.push(false);
-            for(let i=0;i<users.length;i++)
-            {
-                let f = false;
-                for(let j=0;j<ids.length;j++)
-                {
-                    if(users[i].blitzID === ids[j] && !vis[j])
-                        f=true, vis[j]=true;
+
+        for (i = 0; i < data.length; i++) {
+            let obj = {
+                blitzID: '',
+                firstName: '',
+                lastName: '',
+                teamID: data[i].teamID,
+                teamName: data[i].teamName,
+                teamSize: data[i].teamSize,
+                mob: '',
+                email: ''
+            };
+            let user = await userModel.findOne({ blitzID: String(data[i].blitzID) }, (err) => {
+                if (err) {
+                    console.log('errrrr');
                 }
-                if(!f)
-                    console.log('EXTRA',users[i]);
-            }
-            for (let i = 0; i < users.length; i++) {
-                obj.blitzID = users[i].blitzID;
-                obj.firstName = users[i].firstName;
-                obj.lastName = users[i].lastName;
-                obj.teamID = data[i].teamID;
-                obj.teamName = data[i].teamName;
-                obj.teamSize = data[i].teamSize;
-                obj.mob = users[i].mob;
-                obj.email = users[i].email;
-                result.push({...obj});
-            }
-            // console.log('result', result);
+            });
+            obj.blitzID = user.blitzID;
+            obj.firstName = user.firstName;
+            obj.lastName = user.lastName;
+            obj.mob = user.mob;
+            obj.email = user.email;
+            result.push(obj);
         }
+        return result;
     } else {
         console.log('no data');
         return false;
     }
-    return result;
-    // return [];
 }
 
 async function retrieveUser(id) {
