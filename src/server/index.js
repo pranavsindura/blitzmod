@@ -184,16 +184,16 @@ add.post('/addTransaction', (req, res) => {
     userModel.findOne({ blitzID: String(userInput.blitzID) }).then(function(user) {
         let obj = new upiPayModel();
 
-        let obj = {
-            blitzID: user.blitzID,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            mob: user.mob,
-            email: user.email,
-            amount: userInput.amount,
-            transactionID: userInput.transactionID,
-            approval: false
-        };
+        // let obj = {
+            obj.blitzID= user.blitzID;
+            obj.firstName= user.firstName;
+            obj.lastName= user.lastName;
+            obj.mob= user.mob;
+            obj.email= user.email;
+            obj.amount= userInput.amount;
+            obj.transactionID= userInput.transactionID;
+            obj.approval= false;
+        // };
 
         obj.save().then((result) => {
             res.send({
