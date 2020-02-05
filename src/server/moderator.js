@@ -28,30 +28,52 @@ async function findUsersOfEvent(id) {
     });
     // console.log(data);
     if (data) {
-
+        let ids = [];
         for (i = 0; i < data.length; i++) {
-            let obj = {
-                blitzID: '',
-                firstName: '',
-                lastName: '',
-                teamID: data[i].teamID,
-                teamName: data[i].teamName,
-                teamSize: data[i].teamSize,
-                mob: '',
-                email: ''
-            };
-            let user = await userModel.findOne({ blitzID: String(data[i].blitzID) }, (err) => {
-                if (err) {
-                    console.log('errrrr');
-                }
-            });
-            obj.blitzID = user.blitzID;
-            obj.firstName = user.firstName;
-            obj.lastName = user.lastName;
-            obj.mob = user.mob;
-            obj.email = user.email;
-            result.push(obj);
+            ids.push(String(data[i].blitzID));
         }
+        let users = await userModel.find({ blitzID: ids });
+        for (user of users) {
+            for (x of data) {
+                if (user.blitzID === String(x.blitzID)) {
+                    let obj = {
+                        blitzID: user.blitzID,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        teamID: x.teamID,
+                        teamName: x.teamName,
+                        teamSize: x.teamSize,
+                        mob: user.mob,
+                        email: user.email
+                    };
+                    result.push(obj);
+                }
+            }
+        }
+
+        // for (i = 0; i < data.length; i++) {
+        //     let obj = {
+        //         blitzID: '',
+        //         firstName: '',
+        //         lastName: '',
+        //         teamID: data[i].teamID,
+        //         teamName: data[i].teamName,
+        //         teamSize: data[i].teamSize,
+        //         mob: '',
+        //         email: ''
+        //     };
+        //     let user = await userModel.findOne({ blitzID: String(data[i].blitzID) }, (err) => {
+        //         if (err) {
+        //             console.log('errrrr');
+        //         }
+        //     });
+        //     obj.blitzID = user.blitzID;
+        //     obj.firstName = user.firstName;
+        //     obj.lastName = user.lastName;
+        //     obj.mob = user.mob;
+        //     obj.email = user.email;
+        //     result.push(obj);
+        // }
         return result;
     } else {
         console.log('no data');
