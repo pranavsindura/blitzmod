@@ -26,7 +26,7 @@ async function findUsersOfEvent(id) {
             console.log('not found');
         }
     });
-    console.log(data.length);
+    // console.log(data.length);
     if (data) {
         let ids = [];
         for (i = 0; i < data.length; i++) {
@@ -50,7 +50,26 @@ async function findUsersOfEvent(id) {
                 }
             }
         }
-
+        let result2 = [];
+        let done = new Set();
+        for(let i=0;i<result.length;i++)
+        {
+            // console.log(done.size);
+            if(done.has(result[i].teamName))
+                continue;
+                // console.log(result[i].teamName+': ');
+            for(let j=0;j<result.length;j++)
+            {
+                if(result[j].teamName === result[i].teamName){
+                    // console.log(result[j].teamName);
+                    result2.push(result[j]);
+                }
+                   
+            }
+            done.add(result[i].teamName);
+        }
+        // for(x of result2)
+        //     console.log(x.teamName);
         // for (i = 0; i < data.length; i++) {
         //     let obj = {
         //         blitzID: '',
@@ -74,8 +93,9 @@ async function findUsersOfEvent(id) {
         //     obj.email = user.email;
         //     result.push(obj);
         // }
-        return result;
-    } else {
+        console.log(result2.length, result.length);
+        return result2;
+    } else { 
         console.log('no data');
         return false;
     }
