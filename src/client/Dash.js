@@ -27,8 +27,8 @@ export default class Dash extends Component {
 			approval: false
 		},
 	};
-	proxy = 'http://localhost:8080';
-	// proxy = '';
+	// proxy = 'http://localhost:8080';
+	proxy = '';
 	fetchAccomodation() {
 		axios
 			.post(this.proxy + '/accomodation')

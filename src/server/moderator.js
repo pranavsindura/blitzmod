@@ -54,14 +54,11 @@ async function findUsersOfEvent(id) {
         let done = new Set();
         for(let i=0;i<result.length;i++)
         {
-            // console.log(done.size);
             if(done.has(result[i].teamName))
                 continue;
-                // console.log(result[i].teamName+': ');
             for(let j=0;j<result.length;j++)
             {
                 if(result[j].teamName === result[i].teamName){
-                    // console.log(result[j].teamName);
                     result2.push(result[j]);
                 }
                    
