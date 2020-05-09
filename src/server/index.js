@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyparser = require('body-parser');
 
-const uri = 'mongodb+srv://Dhairya-Shalu:light12345@first-demo-ocw10.mongodb.net/test?retryWrites=true&w=majority';
+const uri = '';
 
 let moderator = require('./moderator');
 let { upiPayModel } = require('./paymodel');
